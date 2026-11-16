@@ -56,7 +56,7 @@ def test_daily_mean_integers():
         (
             [[-1, 2, 3], [4, 5, 6], [7, 8, 9]],
             [[0, 0.67, 1], [0.67, 0.83, 1], [0.78, 0.89, 1]],
-            ValueError,
+            ValueError('Inflammation values should not be negative'),
         ),
         (
             [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
@@ -66,20 +66,37 @@ def test_daily_mean_integers():
         (
             [[-1, 2, 3], [4, 5, 6], [7, 8, 9]],
             [[0, 0.67, 1], [0.67, 0.83, 1], [0.78, 0.89, 1]],
-            ValueError,
+            ValueError('Inflammation values should not be negative'),
         ),
         (
             [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
             [[0.33, 0.67, 1], [0.67, 0.83, 1], [0.78, 0.89, 1]],
             None,
         ),
+        (
+            [4, 5, 6],
+            None,
+            ValueError("Input data must be a 2D numpy array"),
+        ),
+        (
+            'hello',
+            None,
+            TypeError("Input data must be a numpy array"),
+        ),
+        (
+            3,
+            None,
+            TypeError("Input data must be a numpy array"),
+        )
     ])
 def test_patient_normalise(test, expected, expect_raises):
     """Test normalisation works for arrays of one and positive integers."""
 
+    if isinstance(test, list):
+        test = np.array(test)
     if expect_raises is not None:
-        with pytest.raises(expect_raises):
-            patient_normalise(np.array(test))
+        with pytest.raises(type(expect_raises), match=str(expect_raises)):
+            patient_normalise(test)
     else:
-        result = patient_normalise(np.array(test))
+        result = patient_normalise(test)
         npt.assert_allclose(result, np.array(expected), rtol=1e-2, atol=1e-2)
